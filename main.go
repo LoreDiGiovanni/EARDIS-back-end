@@ -1,12 +1,17 @@
 package main
 
 import (
-    "fmt"
+	"log"
 )
 
 func main(){
-    fmt.Println("[v] Back end started")
-    server := NewAPIServer(":3000")
+    log.Println("[v] Back end started")
+    store, err := newMongoStore()
+    if err!=nil{
+        log.Fatal("[X] Storeg connection error")
+    }
+    server := NewAPIServer(":3000",store)
+    store.initStorage()
     server.Run()
 
 }

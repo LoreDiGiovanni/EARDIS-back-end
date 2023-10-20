@@ -17,8 +17,9 @@ type User struct{
 
 
 type Storage interface{
-    createEvent(*Event) error
-    deleteEvent(string) error
-    getAccountByID(string) (*Event, error)
+    initStorage() error
+    //createEvent(*Event) error
+    //deleteEvent(string) error
+    //getAccountByID(string) (*Event, error)
 }
 
