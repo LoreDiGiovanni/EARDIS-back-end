@@ -3,7 +3,8 @@ package main
 import (
 	"fmt"
 	"net/http"
-    jwt "github.com/golang-jwt/jwt/v5"
+
+	jwt "github.com/golang-jwt/jwt/v5"
 	"github.com/gorilla/mux"
 )
 
@@ -39,35 +40,45 @@ func (s* APIServer) Run() {
 
 func (s* APIServer) HandleEvents(w http.ResponseWriter, r *http.Request,t *jwt.Token) error{
     switch r.Method {
-        case "GET": return getEvent(w,r,t) 
-        case "POST": return createEvent(w,r,t) 
-        case "PATCH": return patchEvent(w,r,t) 
-        case "DELETE": return deleteEvent(w,r,t) 
+        case "GET": return s.getEvent(w,r,t) 
+        case "POST": return s.createEvent(w,r,t) 
+        case "PATCH": return s.patchEvent(w,r,t) 
+        case "DELETE": return s.deleteEvent(w,r,t) 
     }
     return fmt.Errorf("Method not allowed %s", r.Method)
 }
 
 func (s* APIServer) HandleCreateAccount(w http.ResponseWriter, r *http.Request) error{
     if r.Method == "POST"{
-        return createAccount(w,r) 
+        return s.createAccount(w,r) 
     }else{
         return fmt.Errorf("Method not allowed %s", r.Method)
     }
 }
 
-func createEvent(w http.ResponseWriter,r *http.Request,t *jwt.Token) error{
+func (s* APIServer) createEvent(w http.ResponseWriter,r *http.Request,t *jwt.Token) error{
     return WriteJSON(w,http.StatusOK,Event{Title: "Test"})
 }
-func patchEvent(w http.ResponseWriter,r *http.Request,t *jwt.Token) error{
+func (s* APIServer) patchEvent(w http.ResponseWriter,r *http.Request,t *jwt.Token) error{
     return WriteJSON(w,http.StatusOK,Event{Title: "Test"})
 }
-func deleteEvent(w http.ResponseWriter,r *http.Request,t *jwt.Token) error{
+func (s* APIServer) deleteEvent(w http.ResponseWriter,r *http.Request,t *jwt.Token) error{
     return WriteJSON(w,http.StatusOK,Event{Title: "Test"})
 }
-func getEvent(w http.ResponseWriter,r *http.Request,t *jwt.Token) error{
+func (s* APIServer) getEvent(w http.ResponseWriter,r *http.Request,t *jwt.Token) error{
     return WriteJSON(w,http.StatusOK,Event{Title: "Test"})
 }
 
-func createAccount(w http.ResponseWriter,r *http.Request) error{
-    return WriteJSON(w,http.StatusOK,Event{Title: "Test"})
+func (s* APIServer) createAccount(w http.ResponseWriter,r *http.Request) error{
+    username := r.Header.Get("username")
+    email := r.Header.Get("email")
+    pwd := r.Header.Get("pwd")
+    user := User{Username: username,Email: email,PWD: pwd}
+    newuser,err := s.store.createAccount(&user)
+    if err!=nil{
+        return WriteJSON(w,http.StatusBadRequest,ApiError{Error: "bad"})
+    }else{
+        token := struct{Token string `json:"token"`}{Token: newuser.JWT}
+        return WriteJSON(w,http.StatusOK,token)
+    }
 }

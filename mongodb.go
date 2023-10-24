@@ -2,10 +2,11 @@ package main
 
 import (
 	"context"
-	"log"
 	"os"
+
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/bson"
+
+	//"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -23,20 +24,19 @@ func newMongoStore() (*mongoStore,error,){
     }
 }
 
-func (s *mongoStore) initStorage() error {
+func (s *mongoStore) createAccount(user *User) (*User,error){
     coll := s.db.Database("eardis").Collection("users")
-    var result bson.M
-    err := coll.FindOne(context.Background(),bson.M{}).Decode(&result)
-    if err != nil {
-        if err == mongo.ErrNoDocuments {
-            log.Println("Nessun documento trovato")
-        } else {
-            log.Fatal("Errore nella query:", err)
-            return err
+    _,err := coll.InsertOne(context.TODO(),user)
+    if err!=nil{
+        return nil,err 
+    }else{
+        jwt,err:= createUserJWT(user)
+        if err!= nil{
+            return nil,err
+        }else{
+            user.JWT = jwt
+            return user,nil
         }
     }
-    log.Println(result)
-    return nil
 }
-
 

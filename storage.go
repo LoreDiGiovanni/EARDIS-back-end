@@ -1,25 +1,24 @@
 package main
 
 type Event struct{
-    Owner string 
-    Title string 
-    Description string
-    Tags []string
-    Status string
-    Prj string
+    Owner string `json:"owner"`
+    Title string  `json:"title"`
+    Description string `json:"Description"`
+    Tags []string `json:"tags"`
+    Status string `json:"status"`
+    Prj string `json:"prj"`
 }
 
 type User struct{
-   id string
-   Name string
-   Mail string
-   pwd string
+   ID string `json:"id" bson:"id,omitempty"`
+   Username string `json:"username" bson:"username"`
+   Email string `json:"email" bson:"email"`
+   PWD string `json:"pwd" bson:"pwd"`
+   JWT string `json:"jwt" bson:"jwt"`
 }
 
-
 type Storage interface{
-    initStorage() error
-    //createAccount(*User) error
+    createAccount(*User) (*User, error)
     //createEvent(*Event) error
     //deleteEvent(string) error
     //getAccountByID(string) (*Event, error)
