@@ -13,3 +13,10 @@ services:
     ports:
       - 27017:27017
  ```
+
+## Export
+
+ ``` 
+export MONGODB_URI="mongodb://root:example@127.0.0.1:27017/"
+export JWT_SECRET="testpass"
+ ```
