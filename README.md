@@ -15,7 +15,6 @@ services:
  ```
 
 ## Export
-
  ``` 
 export MONGODB_URI="mongodb://root:example@127.0.0.1:27017/"
 export JWT_SECRET="testpass"

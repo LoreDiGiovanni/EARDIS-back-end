@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	jwt "github.com/golang-jwt/jwt/v5"
@@ -40,7 +41,7 @@ func (s* APIServer) Run() {
 
 func (s* APIServer) HandleEvents(w http.ResponseWriter, r *http.Request,t *jwt.Token) error{
     switch r.Method {
-        case "GET": return s.getEvent(w,r,t) 
+        case "GET": return s.getEvents(w,r,t) 
         case "POST": return s.createEvent(w,r,t) 
         case "PATCH": return s.patchEvent(w,r,t) 
         case "DELETE": return s.deleteEvent(w,r,t) 
@@ -65,7 +66,9 @@ func (s* APIServer) patchEvent(w http.ResponseWriter,r *http.Request,t *jwt.Toke
 func (s* APIServer) deleteEvent(w http.ResponseWriter,r *http.Request,t *jwt.Token) error{
     return WriteJSON(w,http.StatusOK,Event{Title: "Test"})
 }
-func (s* APIServer) getEvent(w http.ResponseWriter,r *http.Request,t *jwt.Token) error{
+func (s* APIServer) getEvents(w http.ResponseWriter,r *http.Request,t *jwt.Token) error{
+    claims := t.Claims.(jwt.MapClaims)     
+    log.Print(claims)
     return WriteJSON(w,http.StatusOK,Event{Title: "Test"})
 }
 
