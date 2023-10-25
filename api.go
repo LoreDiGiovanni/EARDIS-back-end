@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 
 	jwt "github.com/golang-jwt/jwt/v5"
@@ -67,8 +66,6 @@ func (s* APIServer) deleteEvent(w http.ResponseWriter,r *http.Request,t *jwt.Tok
     return WriteJSON(w,http.StatusOK,Event{Title: "Test"})
 }
 func (s* APIServer) getEvents(w http.ResponseWriter,r *http.Request,t *jwt.Token) error{
-    claims := t.Claims.(jwt.MapClaims)     
-    log.Print(claims)
     return WriteJSON(w,http.StatusOK,Event{Title: "Test"})
 }
 
@@ -79,7 +76,7 @@ func (s* APIServer) createAccount(w http.ResponseWriter,r *http.Request) error{
     user := User{Username: username,Email: email,PWD: pwd}
     newuser,err := s.store.createAccount(&user)
     if err!=nil{
-        return WriteJSON(w,http.StatusBadRequest,ApiError{Error: "bad"})
+        return WriteJSON(w,http.StatusBadRequest,ApiError{Error: "Email or Username already used!"})
     }else{
         token := struct{Token string `json:"token"`}{Token: newuser.JWT}
         return WriteJSON(w,http.StatusOK,token)
