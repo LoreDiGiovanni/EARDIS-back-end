@@ -1,6 +1,7 @@
 package main
 
 import (
+    "encoding/json"
 	"fmt"
 	"net/http"
 
@@ -57,7 +58,13 @@ func (s* APIServer) HandleCreateAccount(w http.ResponseWriter, r *http.Request) 
 }
 
 func (s* APIServer) createEvent(w http.ResponseWriter,r *http.Request,t *jwt.Token) error{
-    return WriteJSON(w,http.StatusOK,Event{Title: "Test"})
+    claims := t.Claims.(jwt.MapClaims)
+    id := claims["id"].(string)
+    var event Event = Event{Owner: id}
+    if err := json.NewDecoder(r.Body).Decode(&event); err != nil {return err}
+    defer r.Body.Close()
+    s.store.createEvent(&event)
+    return WriteJSON(w,http.StatusOK,ApiError{Error: "NULL"})
 }
 func (s* APIServer) patchEvent(w http.ResponseWriter,r *http.Request,t *jwt.Token) error{
     return WriteJSON(w,http.StatusOK,Event{Title: "Test"})
@@ -66,14 +73,18 @@ func (s* APIServer) deleteEvent(w http.ResponseWriter,r *http.Request,t *jwt.Tok
     return WriteJSON(w,http.StatusOK,Event{Title: "Test"})
 }
 func (s* APIServer) getEvents(w http.ResponseWriter,r *http.Request,t *jwt.Token) error{
+    claims := t.Claims.(jwt.MapClaims)
+    id := claims["id"].(string)
+    s.store.getEvents(id)
     return WriteJSON(w,http.StatusOK,Event{Title: "Test"})
 }
 
 func (s* APIServer) createAccount(w http.ResponseWriter,r *http.Request) error{
-    username := r.Header.Get("username")
-    email := r.Header.Get("email")
-    pwd := r.Header.Get("pwd")
-    user := User{Username: username,Email: email,PWD: pwd}
+    var user User
+    if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+        return err
+    }
+    defer r.Body.Close()
     newuser,err := s.store.createAccount(&user)
     if err!=nil{
         return WriteJSON(w,http.StatusBadRequest,ApiError{Error: "Email or Username already used!"})

@@ -23,9 +23,8 @@ func jwtHandleFunc(f jwtHandle) http.HandlerFunc{
 
 func createUserJWT(user *User) (string, error){
     claims:= &jwt.MapClaims{
-        "user": user.Username,
+        "id":   user.ID,
         "email": user.Email,
-        //"pwd": user.PWD,
     }
     secret:= []byte(os.Getenv("JWT_SECRET"))
     token:= jwt.NewWithClaims(jwt.SigningMethodHS256,claims)

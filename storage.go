@@ -1,12 +1,12 @@
 package main
 
 type Event struct{
-    Owner string `json:"owner"`
-    Title string  `json:"title"`
-    Description string `json:"Description"`
-    Tags []string `json:"tags"`
-    Status string `json:"status"`
-    Prj string `json:"prj"`
+    Owner string `json:"owner" bson:"owner"`
+    Title string  `json:"title" bson:"title"`
+    Description string `json:"description" bson:"description"`
+    Tags []string `json:"tags" bson:"tags"`
+    Status string `json:"status" bson:"status"`
+    Prj string `json:"prj" bson:"prj"`
 }
 
 type User struct{
@@ -19,8 +19,8 @@ type User struct{
 
 type Storage interface{
     createAccount(*User) (*User, error)
-    getEvent(*User) (*Event, error)
-    //createEvent(*Event) error
+    getEvents(string) ([]*Event, error)
+    createEvent(*Event) error
     //deleteEvent(string) error
 }
 
