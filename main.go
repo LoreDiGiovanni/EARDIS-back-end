@@ -11,7 +11,5 @@ func main(){
         log.Fatal("[X] Storeg connection error")
     }
     server := NewAPIServer(":3000",store)
-    store.initStorage()
     server.Run()
-
 }
