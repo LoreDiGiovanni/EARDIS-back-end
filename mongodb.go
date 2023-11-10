@@ -47,11 +47,30 @@ func (s *mongoStore) createAccount(user *User) (*User,error){
 }
 
 func (s *mongoStore) createEvent(e *Event) error{
-    log.Println("[V] New Event: ",e)
-    return nil
+    coll := s.db.Database("eardis").Collection("events")
+    res,err := coll.InsertOne(context.TODO(),e)
+    if err != nil{
+        log.Println(err)
+        return err
+    }else{
+        log.Println("[V] New Event: ",res.InsertedID.(primitive.ObjectID))
+        return nil
+    }
 }
 
 func (s *mongoStore) getEvents(id string) ([]*Event, error){
-    log.Println("[V] Get ",id,"'s Events")
-    return nil, nil
+    coll := s.db.Database("eardis").Collection("events")
+    filter := bson.D{{"owner", id}}
+    cursor, err := coll.Find(context.TODO(), filter); if err!= nil{
+        log.Println(err,"Function: getEvents")
+        return nil,err    
+    }else{
+        var results []*Event
+        if err = cursor.All(context.TODO(), &results); err != nil {
+            log.Println(err,"Function: getEvents")
+            return nil,err
+	    }else{
+            return results,nil
+        }
+    }
 }

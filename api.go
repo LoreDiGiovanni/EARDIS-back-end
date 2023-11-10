@@ -1,8 +1,9 @@
 package main
 
 import (
-    "encoding/json"
+	"encoding/json"
 	"fmt"
+    "log"
 	"net/http"
 
 	jwt "github.com/golang-jwt/jwt/v5"
@@ -66,25 +67,34 @@ func (s* APIServer) createEvent(w http.ResponseWriter,r *http.Request,t *jwt.Tok
     s.store.createEvent(&event)
     return WriteJSON(w,http.StatusOK,ApiError{Error: "NULL"})
 }
+
 func (s* APIServer) patchEvent(w http.ResponseWriter,r *http.Request,t *jwt.Token) error{
     return WriteJSON(w,http.StatusOK,Event{Title: "Test"})
 }
+
 func (s* APIServer) deleteEvent(w http.ResponseWriter,r *http.Request,t *jwt.Token) error{
     return WriteJSON(w,http.StatusOK,Event{Title: "Test"})
 }
+
 func (s* APIServer) getEvents(w http.ResponseWriter,r *http.Request,t *jwt.Token) error{
+    var events []*Event 
+    var err error
     claims := t.Claims.(jwt.MapClaims)
     id := claims["id"].(string)
-    s.store.getEvents(id)
-    return WriteJSON(w,http.StatusOK,Event{Title: "Test"})
+    events, err =  s.store.getEvents(id)
+    if err!= nil{
+        log.Println("Function: getEvents, id: ",id,", Error: ",err)
+        return WriteJSON(w,http.StatusBadRequest,ApiError{Error: "User not found"})
+    }else{
+        return WriteJSON(w,http.StatusOK,events)
+    }
 }
 
 func (s* APIServer) createAccount(w http.ResponseWriter,r *http.Request) error{
     var user User
-    if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-        return err
-    }
+    if err := json.NewDecoder(r.Body).Decode(&user); err != nil {return err}
     defer r.Body.Close()
+
     newuser,err := s.store.createAccount(&user)
     if err!=nil{
         return WriteJSON(w,http.StatusBadRequest,ApiError{Error: "Email or Username already used!"})
