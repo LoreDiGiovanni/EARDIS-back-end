@@ -16,11 +16,11 @@ services:
       - 27017:27017
  ```
 
-## run widout docker 
-
+## run without docker
  ``` 
 export MONGODB_URI="mongodb://root:example@127.0.0.1:27017/"
 export JWT_SECRET="testpass"
+make run 
  ```
 
 ## Build the container
