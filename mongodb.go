@@ -4,12 +4,15 @@ import (
 	"context"
 	"log"
 	"os"
+   "errors"
+
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
+
 
 type mongoStore struct{
     db *mongo.Client
@@ -74,3 +77,28 @@ func (s *mongoStore) getEvents(id string) ([]*Event, error){
         }
     }
 }
+func (s *mongoStore) deleteEvent(ownerid string ,eventid string) error{
+    coll := s.db.Database("eardis").Collection("events")
+    objectID, err := primitive.ObjectIDFromHex(eventid); if err != nil {return err}
+    filter := bson.D{{"_id", objectID},{"owner", ownerid}}
+    _, err = coll.DeleteOne(context.TODO(), filter); if err != nil {
+        return err
+    }else{
+        return nil
+    }
+}
+
+func (s *mongoStore) patchEvent(ownerid string ,eventid string,e *Event) error{
+    coll := s.db.Database("eardis").Collection("events")
+    objectID, err := primitive.ObjectIDFromHex(eventid); if err != nil {
+		return errors.New("Invalid event id") 
+	}
+    filter := bson.D{{"_id", objectID},{"owner", ownerid}}
+    update := bson.D{{"$set", e}}
+    _ , err = coll.UpdateOne(context.TODO(), filter, update); if err != nil {
+        return err
+    }else{
+        return nil
+    }
+}
+

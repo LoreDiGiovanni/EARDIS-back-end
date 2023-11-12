@@ -10,6 +10,7 @@ type Prj struct{
 }
 
 type Event struct{
+    ID string `json:"id" bson:"_id,omitempty"`
     Owner string `json:"owner" bson:"owner"`
     Guests [] string `json:"guests" bson:"guests"`
     Title string  `json:"title" bson:"title"`
@@ -20,6 +21,7 @@ type Event struct{
     Date Datetime `json:"date" bson:"date"`
     Deadline Datetime `json:"deadline" bson:"deadline"`
 }
+
 
 type User struct{
    ID string `json:"id" bson:"id,omitempty"`
@@ -34,6 +36,7 @@ type Storage interface{
     createAccount(*User) (*User, error)
     getEvents(string) ([]*Event, error)
     createEvent(*Event) error
-    //deleteEvent(string) error
+    deleteEvent(string,string) error
+    patchEvent(string,string,*Event) error
 }
 
