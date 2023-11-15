@@ -22,13 +22,13 @@ export MONGODB_URI="mongodb://root:example@127.0.0.1:27017/"
 export JWT_SECRET="testpass"
 make run 
  ```
-
-## Build the container
+## run with docker
+### Build the container
 1. `https://github.com/gotorosso/EARDIS-back-end.git`
 2. `cd EARDIS-back-end/`
 3. `docker build -t eardis-api .` 
 
-## Run the container  
+### Run the container  
 
  ```sh
 docker run -it --name eardis-api\
