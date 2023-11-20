@@ -1,10 +1,13 @@
-package main
+package storage 
 
 import (
 	"context"
 	"errors"
 	"log"
 	"os"
+    "eardis/types"
+    "eardis/tools"
+    
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -17,7 +20,7 @@ type mongoStore struct{
     db *mongo.Client
 }
 
-func newMongoStore() (*mongoStore,error,){
+func NewMongoStore() (*mongoStore,error,){
     uri := os.Getenv("MONGODB_URI")
     client, err := mongo.Connect(context.TODO(),options.Client().ApplyURI(uri))
     if err!= nil {
@@ -27,7 +30,7 @@ func newMongoStore() (*mongoStore,error,){
     }
 }
 
-func (s *mongoStore) createAccount(user *User) (*User,error){
+func (s *mongoStore) CreateAccount(user *types.User) (*types.User,error){
     var err error
     coll := s.db.Database("eardis").Collection("users")
     res,err := coll.InsertOne(context.TODO(),user)
@@ -36,7 +39,7 @@ func (s *mongoStore) createAccount(user *User) (*User,error){
     }else{
         id := res.InsertedID.(primitive.ObjectID)
         user.ID = id.Hex()
-        user.JWT,err= createUserJWT(user)
+        user.JWT,err= tools.CreateUserJWT(user)
         filter := bson.D{{"_id", id}}
         update := bson.D{{"$set", bson.D{{"jwt", user.JWT}}}}
         _, err := coll.UpdateOne(context.TODO(), filter, update)
@@ -48,7 +51,7 @@ func (s *mongoStore) createAccount(user *User) (*User,error){
     }
 }
 
-func (s *mongoStore) createEvent(e *Event) error{
+func (s *mongoStore) CreateEvent(e *types.Event) error{
     coll := s.db.Database("eardis").Collection("events")
     res,err := coll.InsertOne(context.TODO(),e)
     if err != nil{
@@ -60,17 +63,17 @@ func (s *mongoStore) createEvent(e *Event) error{
     }
 }
 
-func (s *mongoStore) getEvents(userid string) ([]*Event, error){
+func (s *mongoStore) GetEvents(userid string) ([]*types.Event, error){
     coll := s.db.Database("eardis").Collection("events")
     filter := bson.D{{"owner", userid}}
     cursor, err := coll.Find(context.TODO(), filter); if err!= nil{
         return nil,err    
     }else{
-        var results []*Event
+        var results []*types.Event
         if err = cursor.All(context.TODO(), &results); err != nil {
             return nil,err
 	    }else{
-            fireds_resout,err := s.getFriendsEvents(userid);if err != nil{
+            fireds_resout,err := s.GetFriendsEvents(userid);if err != nil{
                 return results,nil
             }else{
                 results := append(results, fireds_resout...)
@@ -79,7 +82,7 @@ func (s *mongoStore) getEvents(userid string) ([]*Event, error){
         }
     }
 }
-func (s *mongoStore) deleteEvent(ownerid string ,eventid string) error{
+func (s *mongoStore) DeleteEvent(ownerid string ,eventid string) error{
     coll := s.db.Database("eardis").Collection("events")
     objectID, err := primitive.ObjectIDFromHex(eventid); if err != nil {return err}
     filter := bson.D{{"_id", objectID},{"owner", ownerid}}
@@ -90,7 +93,7 @@ func (s *mongoStore) deleteEvent(ownerid string ,eventid string) error{
     }
 }
 
-func (s *mongoStore) patchEvent(ownerid string ,eventid string,e *Event) error{
+func (s *mongoStore) PatchEvent(ownerid string ,eventid string,e *types.Event) error{
     coll := s.db.Database("eardis").Collection("events")
     objectID, err := primitive.ObjectIDFromHex(eventid); if err != nil {
 		return errors.New("Invalid event id") 
@@ -104,10 +107,10 @@ func (s *mongoStore) patchEvent(ownerid string ,eventid string,e *Event) error{
     }
 }
 
-func (s *mongoStore)login(user *User) (string,error){
+func (s *mongoStore)Login(user *types.User) (string,error){
     coll := s.db.Database("eardis").Collection("users")
     filter := bson.D{{"username",user.Username},{"pwd",user.PWD},{"email",user.Email}}
-    var newuser User
+    var newuser types.User
     err := coll.FindOne(context.TODO(),filter).Decode(&newuser); if err != nil{
         return "", err 
     }else{
@@ -115,40 +118,40 @@ func (s *mongoStore)login(user *User) (string,error){
     }
 }
 
-func (s *mongoStore)searchUser(email string) (*DisplayableUser,error){
+func (s *mongoStore)SearchUser(email string) (*types.DisplayableUser,error){
     coll := s.db.Database("eardis").Collection("users")
     filter := bson.D{{"email",email}}
-    var friend User
+    var friend types.User
     err := coll.FindOne(context.TODO(),filter).Decode(&friend); if err != nil{
         return nil,err 
     }else{
-        var duser DisplayableUser = DisplayableUser{ID: friend.ID,Username: friend.Username,Email: friend.Email}
+        var duser types.DisplayableUser = types.DisplayableUser{ID: friend.ID,Username: friend.Username,Email: friend.Email}
         return &duser, nil
     }
 }
 
-func (s *mongoStore)getUser(userid string)(*DisplayableUser,error){
+func (s *mongoStore)GetUser(userid string)(*types.DisplayableUser,error){
     coll := s.db.Database("eardis").Collection("users")
     objectID, err := primitive.ObjectIDFromHex(userid); if err != nil {
 		return nil,errors.New("Invalid event id") 
 	}
     filter := bson.D{{"_id",objectID}}
-    var user User
+    var user types.User
     err = coll.FindOne(context.TODO(),filter).Decode(&user); if err != nil{
         return nil,err 
     }else{
-        var duser DisplayableUser = DisplayableUser{ID: user.ID,Username: user.Username,Email: user.Email}
+        var duser types.DisplayableUser = types.DisplayableUser{ID: user.ID,Username: user.Username,Email: user.Email}
         return &duser, nil
     }
 }
 
-func (s *mongoStore)getNotifications(userid string)([]*Notifications,error){    
+func (s *mongoStore)GetNotifications(userid string)([]*types.Notifications,error){    
     coll := s.db.Database("eardis").Collection("notifications")
     filter := bson.D{{"to", userid}}
     cursor, err := coll.Find(context.TODO(), filter); if err!= nil{
         return nil,err    
     }else{
-        var results []*Notifications
+        var results []*types.Notifications
         if err = cursor.All(context.TODO(), &results); err != nil {
             return nil,err
 	    }else{
@@ -157,7 +160,7 @@ func (s *mongoStore)getNotifications(userid string)([]*Notifications,error){
     }
 }
 
-func (s *mongoStore)sendFriendRequestNotifications(notification Notifications)error{
+func (s *mongoStore)SendFriendRequestNotifications(notification types.Notifications)error{
     coll := s.db.Database("eardis").Collection("notifications")
     _,err := coll.InsertOne(context.TODO(),notification); if err!=nil{
         return err
@@ -166,13 +169,13 @@ func (s *mongoStore)sendFriendRequestNotifications(notification Notifications)er
     }
 }
 
-func (s *mongoStore)acceptFriendRequest(notificationsid string, ownerid string)error{
+func (s *mongoStore)AcceptFriendRequest(notificationsid string, ownerid string)error{
     coll := s.db.Database("eardis").Collection("notifications")
     objectID, err := primitive.ObjectIDFromHex(notificationsid); if err != nil {return err}
     var filter bson.M
     var update bson.M
     filter = bson.M{"_id":objectID,"to":ownerid}
-    var message Notifications
+    var message types.Notifications
     err = coll.FindOne(context.TODO(),filter).Decode(&message); if err != nil{
         return err 
     }else{
@@ -221,7 +224,7 @@ func (s *mongoStore)acceptFriendRequest(notificationsid string, ownerid string)e
     }
 }
 
-func (s mongoStore)declineFriendRequest(notificationsid string,ownerid string)error{
+func (s mongoStore)DeclineFriendRequest(notificationsid string,ownerid string)error{
     coll := s.db.Database("eardis").Collection("notifications")
     objectID, err := primitive.ObjectIDFromHex(notificationsid); if err != nil {return err}
     filter := bson.D{{"_id",objectID},{"to",ownerid}}
@@ -232,17 +235,17 @@ func (s mongoStore)declineFriendRequest(notificationsid string,ownerid string)er
     } 
 }
 
-func (s mongoStore) getFriendsEvents(userid string) ([]*Event, error){
+func (s mongoStore) GetFriendsEvents(userid string) ([]*types.Event, error){
     coll := s.db.Database("eardis").Collection("users")
     objectID, err := primitive.ObjectIDFromHex(userid); if err != nil {
 		return nil,errors.New("Invalid event id") 
 	}
     var filter bson.D = bson.D{{"_id",objectID}}
-    var user User
+    var user types.User
     err = coll.FindOne(context.TODO(),filter).Decode(&user); if err != nil{
         return nil,err
     }else{
-        var results []*Event
+        var results []*types.Event
         eventsColl := s.db.Database("eardis").Collection("events")
         for _,item := range user.Friends{
             filter := bson.D{
@@ -255,7 +258,7 @@ func (s mongoStore) getFriendsEvents(userid string) ([]*Event, error){
             cursor, err := eventsColl.Find(context.TODO(), filter); if err!= nil{
                 return nil,err    
             }else{
-                var tmp []*Event
+                var tmp []*types.Event
                 if err = cursor.All(context.TODO(), &tmp); err != nil {
                     return nil,err
 	            }else{

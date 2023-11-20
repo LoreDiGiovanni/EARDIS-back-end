@@ -1,4 +1,4 @@
-package main
+package types
 
 type DisplayableUser struct{
    ID string `json:"id" bson:"id,omitempty"`
@@ -77,25 +77,4 @@ type User struct{
    JWT string `json:"jwt" bson:"jwt"`
    Friends []string `json:"friends" bson:"friends"` 
    Prj_list []string `json:"prj_list" bson:"prj_list"`
-}
-
-type Storage interface{
-    createAccount(*User) (*User, error)
-    getEvents(userid string) ([]*Event, error)
-    createEvent(e *Event) error
-    deleteEvent(ownerid string, eventid string) error
-    patchEvent(ownerid string,eventid string,e *Event) error
-    login(user *User)(string,error)
-    getUser(userid string)(*DisplayableUser,error)
-    //updateUser(userid string)(*User,error) // (DisplayableUser,error)??
-    getNotifications(userid string)([]*Notifications,error)
-    searchUser(email string)(*DisplayableUser,error) 
-    sendFriendRequestNotifications(notification Notifications)error 
-    acceptFriendRequest(notificationsid string, ownerid string)error 
-    declineFriendRequest(notificationsid string,ownerid string)error 
-    getFriendsEvents(userid string) ([]*Event, error) 
-   // createPrj(prj *Prj)error
-   // deletePrj(prjid string)error
-   // updatePrj(prj *Prj)error
-   // addUserToPrj(prjuser PrjRole, prjid string)error
 }

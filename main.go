@@ -2,14 +2,16 @@ package main
 
 import (
 	"log"
+    "eardis/api"
+    "eardis/storage"
 )
 
 func main(){
     log.Println("[v] Back end started")
-    store, err := newMongoStore()
+    store, err := storage.NewMongoStore()
     if err!=nil{
         log.Fatal("[X] Storeg connection error")
     }
-    server := NewAPIServer(":3000",store)
+    server := api.NewAPIServer(":3000",store)
     server.Run()
 }
