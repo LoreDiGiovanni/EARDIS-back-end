@@ -38,17 +38,7 @@ func NewAPIServer(address string,store storage.Storage) *APIServer{
 }
 
 func (s* APIServer) Run() {
-    router := mux.NewRouter() 
-    router.HandleFunc("/createAccount",genericHandleFunc(s.HandleCreateAccount))
-    router.HandleFunc("/login",genericHandleFunc(s.HandleLogin))
-    router.HandleFunc("/user",jwtHandleFunc(s.HandleUser))
-    router.HandleFunc("/events",jwtHandleFunc(s.HandleEvents))
-    router.HandleFunc("/events/{eventid}",jwtHandleFunc(s.HandleEventById))
-    router.HandleFunc("/projects",jwtHandleFunc(s.HandleProjects))
-    router.HandleFunc("/notifications",jwtHandleFunc(s.HandleNotifications))
-    router.HandleFunc("/notifications/conferm",jwtHandleFunc(s.HandleNotificationsByID))
-    router.HandleFunc("/friends",jwtHandleFunc(s.HandleFiriends))
-    http.ListenAndServe(s.address,router)
+    http.ListenAndServe(s.address,s.SetupRoutes())
 }
 
 func (s* APIServer) HandleFiriends(w http.ResponseWriter, r *http.Request,t *jwt.Token) error{
