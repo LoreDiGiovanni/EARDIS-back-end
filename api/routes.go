@@ -7,6 +7,7 @@ import (
 func (s *APIServer) SetupRoutes() *mux.Router {
     router := mux.NewRouter()
 
+    router.HandleFunc("/check", genericHandleFunc(s.HandleCheck))
     router.HandleFunc("/createAccount", genericHandleFunc(s.HandleCreateAccount))
     router.HandleFunc("/login", genericHandleFunc(s.HandleLogin))
     router.HandleFunc("/user", jwtHandleFunc(s.HandleUser))

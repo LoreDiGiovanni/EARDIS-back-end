@@ -1,5 +1,9 @@
 package types
 
+type TokenResponse struct {
+	Token string `json:"token"`
+}
+
 type DisplayableUser struct{
    ID string `json:"id" bson:"id,omitempty"`
    Username string `json:"username" bson:"username"`

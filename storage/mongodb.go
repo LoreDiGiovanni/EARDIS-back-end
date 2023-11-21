@@ -269,3 +269,16 @@ func (s mongoStore) GetFriendsEvents(userid string) ([]*types.Event, error){
         return results,nil
     }
 }
+
+func (s mongoStore) DeleteUser(userid string)error{
+    coll := s.db.Database("eardis").Collection("users")
+    objectID, err := primitive.ObjectIDFromHex(userid); if err != nil {
+		return errors.New("Invalid event id") 
+	}
+    filter := bson.D{{"_id",objectID}}
+    _,err = coll.DeleteOne(context.TODO(),filter); if err != nil{
+        return err
+    }else{
+        return nil
+    }
+}

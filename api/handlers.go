@@ -41,6 +41,18 @@ func (s* APIServer) Run() {
     http.ListenAndServe(s.address,s.SetupRoutes())
 }
 
+func (s* APIServer) HandleCheck(w http.ResponseWriter, r *http.Request) error{
+    switch r.Method {
+        case "GET": return s.check(w,r) 
+        
+    }
+    return fmt.Errorf("Method not allowed %s", r.Method)
+}
+
+func (s* APIServer)check(w http.ResponseWriter,r *http.Request) error{
+    return tools.WriteJSON(w,http.StatusOK,nil)
+}
+
 func (s* APIServer) HandleFiriends(w http.ResponseWriter, r *http.Request,t *jwt.Token) error{
     switch r.Method {
         //case "GET": return s.getUser(w,r,t) 
@@ -140,6 +152,7 @@ func (s* APIServer) HandleUser(w http.ResponseWriter, r *http.Request,t *jwt.Tok
     switch r.Method {
         case "GET": return s.getUser(w,r,t) 
         case "POST": return s.searchUser(w,r,t) 
+        case "DELETE": return s.deleteUser(w,r,t)
         
     }
     return fmt.Errorf("Method not allowed %s", r.Method)
@@ -161,10 +174,24 @@ func (s* APIServer) searchUser(w http.ResponseWriter,r *http.Request,t *jwt.Toke
     err := json.NewDecoder(r.Body).Decode(&search);if err != nil {return err}
     defer r.Body.Close()
     user,err := s.store.SearchUser(search.Email);if err!= nil{
+        log.Println(err)
         return tools.WriteJSON(w,http.StatusBadRequest,ApiError{Error: "Account does not exist"})
     }else{
         return tools.WriteJSON(w,http.StatusOK,user)
     }
+}
+
+func (s* APIServer) deleteUser(w http.ResponseWriter,r *http.Request,t *jwt.Token) error{
+    claims := t.Claims.(jwt.MapClaims)
+     userid := claims["id"].(string)
+     err := s.store.DeleteUser(userid); if err != nil{
+        log.Println(err)
+        return tools.WriteJSON(w,http.StatusBadRequest,ApiError{Error: "Account does not exist"})
+    }else{
+         log.Println("[v] User ",userid," deleted")
+        return tools.WriteJSON(w,http.StatusOK,nil)
+    }
+    
 }
 
 func (s* APIServer) HandleEvents(w http.ResponseWriter, r *http.Request,t *jwt.Token) error{
@@ -252,8 +279,7 @@ func (s* APIServer) createAccount(w http.ResponseWriter,r *http.Request) error{
     newuser,err := s.store.CreateAccount(&user); if err!=nil{
         return tools.WriteJSON(w,http.StatusBadRequest,ApiError{Error: "Email or Username already used!"})
     }else{
-        token := struct{Token string `json:"token"`}{Token: newuser.JWT}
-        return tools.WriteJSON(w,http.StatusOK,token)
+        return tools.WriteJSON(w,http.StatusOK,types.TokenResponse{Token: newuser.JWT})
     }
 }
 

@@ -10,6 +10,7 @@ type Storage interface{
     PatchEvent(ownerid string,eventid string,e *types.Event) error
     Login(user *types.User)(string,error)
     GetUser(userid string)(*types.DisplayableUser,error)
+    DeleteUser(userid string)error
     //updateUser(userid string)(*User,error) // (DisplayableUser,error)??
     GetNotifications(userid string)([]*types.Notifications,error)
     SearchUser(email string)(*types.DisplayableUser,error) 
@@ -21,4 +22,5 @@ type Storage interface{
    // deletePrj(prjid string)error
    // updatePrj(prj *Prj)error
    // addUserToPrj(prjuser PrjRole, prjid string)error
+
 }
