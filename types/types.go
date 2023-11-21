@@ -79,6 +79,7 @@ type User struct{
    Email string `json:"email" bson:"email"`
    PWD string `json:"pwd" bson:"pwd"`
    JWT string `json:"jwt" bson:"jwt"`
+   Salt string  `json:"salt" bson:"salt"`
    Friends []string `json:"friends" bson:"friends"` 
    Prj_list []string `json:"prj_list" bson:"prj_list"`
 }

@@ -276,6 +276,7 @@ func (s* APIServer) createAccount(w http.ResponseWriter,r *http.Request) error{
     var user types.User
     if err := json.NewDecoder(r.Body).Decode(&user); err != nil {return err}
     defer r.Body.Close()
+    user.PWD,user.Salt = tools.GeneratePwd(user.PWD) 
     newuser,err := s.store.CreateAccount(&user); if err!=nil{
         return tools.WriteJSON(w,http.StatusBadRequest,ApiError{Error: "Email or Username already used!"})
     }else{

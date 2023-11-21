@@ -1,13 +1,13 @@
-package storage 
+package storage
 
 import (
 	"context"
+	"eardis/tools"
+	"eardis/types"
 	"errors"
+	"fmt"
 	"log"
 	"os"
-    "eardis/types"
-    "eardis/tools"
-    
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -109,12 +109,16 @@ func (s *mongoStore) PatchEvent(ownerid string ,eventid string,e *types.Event) e
 
 func (s *mongoStore)Login(user *types.User) (string,error){
     coll := s.db.Database("eardis").Collection("users")
-    filter := bson.D{{"username",user.Username},{"pwd",user.PWD},{"email",user.Email}}
-    var newuser types.User
-    err := coll.FindOne(context.TODO(),filter).Decode(&newuser); if err != nil{
+    filter := bson.D{{"email",user.Email}}
+    var dbuser types.User
+    err := coll.FindOne(context.TODO(),filter).Decode(&dbuser); if err != nil{
         return "", err 
     }else{
-        return newuser.JWT, nil
+        if dbuser.PWD == tools.RiGeneratePwd(user.PWD,dbuser.Salt){
+            return dbuser.JWT, nil
+        }else{
+            return "", fmt.Errorf("Wrong email or password")
+        }
     }
 }
 

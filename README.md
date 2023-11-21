@@ -20,6 +20,7 @@ services:
  ``` 
 export MONGODB_URI="mongodb://root:example@127.0.0.1:27017/"
 export JWT_SECRET="testpass"
+export PEPPER="a1d31f4bf186f3798f41160b25c20ed5"
 make run 
  ```
 ## run with docker
