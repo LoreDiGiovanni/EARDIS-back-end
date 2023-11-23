@@ -98,6 +98,7 @@ func (s *mongoStore) PatchEvent(ownerid string ,eventid string,e *types.Event) e
     objectID, err := primitive.ObjectIDFromHex(eventid); if err != nil {
 		return errors.New("Invalid event id") 
 	}
+    e.ID = ""
     filter := bson.D{{"_id", objectID},{"owner", ownerid}}
     update := bson.D{{"$set", e}}
     _ , err = coll.UpdateOne(context.TODO(), filter, update); if err != nil {

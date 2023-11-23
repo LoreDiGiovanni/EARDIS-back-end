@@ -1,5 +1,9 @@
 package types
 
+type IdRequest struct {
+	ID string `json:"id"`
+}
+
 type TokenResponse struct {
 	Token string `json:"token"`
 }

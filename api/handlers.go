@@ -11,7 +11,7 @@ import (
 	"eardis/tools"
 
 	jwt "github.com/golang-jwt/jwt/v5"
-	"github.com/gorilla/mux"
+	//"github.com/gorilla/mux"
 )
 
 type APIServer struct{
@@ -135,8 +135,9 @@ func (s* APIServer) sendNotifications(w http.ResponseWriter,r *http.Request,t *j
                 return tools.WriteJSON(w,http.StatusOK,nil)
             }
         }
+        default: return tools.WriteJSON(w,http.StatusBadRequest,ApiError{Error: "User does not exist"}) 
+        
     }
-    return tools.WriteJSON(w,http.StatusBadRequest,ApiError{Error: "Invalid Notification type"})
 }
 
 func (s* APIServer) HandleProjects(w http.ResponseWriter, r *http.Request,t *jwt.Token) error{
@@ -230,7 +231,6 @@ func (s* APIServer) createEvent(w http.ResponseWriter,r *http.Request,t *jwt.Tok
 
 func (s* APIServer) HandleEventById(w http.ResponseWriter, r *http.Request,t *jwt.Token) error{
     switch r.Method {
-        //case "GET": return s.getEvent(w,r,t) 
         case "PATCH": return s.patchEvent(w,r,t) 
         case "DELETE": return s.deleteEvent(w,r,t) 
     }
@@ -239,13 +239,11 @@ func (s* APIServer) HandleEventById(w http.ResponseWriter, r *http.Request,t *jw
 func (s* APIServer) patchEvent(w http.ResponseWriter,r *http.Request,t *jwt.Token) error{
     claims := t.Claims.(jwt.MapClaims)
     ownerid := claims["id"].(string)
-    eventid := mux.Vars(r)["eventid"]
     var event types.Event 
     err := json.NewDecoder(r.Body).Decode(&event);if err != nil {return err}
     defer r.Body.Close()
     event.Owner = ownerid
-    event.ID = eventid
-    err = s.store.PatchEvent(ownerid,eventid,&event); if err != nil{
+    err = s.store.PatchEvent(ownerid,event.ID,&event); if err != nil{
         return tools.WriteJSON(w,http.StatusBadRequest,ApiError{Error: "non-existent event, impossible to update"})
     }else{
         return tools.WriteJSON(w,http.StatusOK,nil)
@@ -255,8 +253,9 @@ func (s* APIServer) patchEvent(w http.ResponseWriter,r *http.Request,t *jwt.Toke
 func (s* APIServer) deleteEvent(w http.ResponseWriter,r *http.Request,t *jwt.Token) error{
     claims := t.Claims.(jwt.MapClaims)
     ownerid := claims["id"].(string)
-    eventid := mux.Vars(r)["eventid"]
-    err :=  s.store.DeleteEvent(ownerid,eventid); if err!= nil{
+    var idRequest types.IdRequest 
+    err := json.NewDecoder(r.Body).Decode(&idRequest);if err != nil {return err}
+    err =  s.store.DeleteEvent(ownerid,idRequest.ID); if err!= nil{
         log.Println("Function: deleteEvent ","Error: ",err)
         return tools.WriteJSON(w,http.StatusBadRequest,ApiError{Error: "Impossible to delete the event"})
     }else{
