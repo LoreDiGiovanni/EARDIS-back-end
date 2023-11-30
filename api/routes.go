@@ -2,10 +2,17 @@ package api
 
 import (
     "github.com/gorilla/mux"
+    "github.com/gorilla/handlers"
 )
 
 func (s *APIServer) SetupRoutes() *mux.Router {
+    
     router := mux.NewRouter()
+    handlers.CORS(
+        handlers.AllowedOrigins([]string{"http://127.0.0.1:5173"}),//just for now
+        handlers.AllowedMethods([]string{"GET","POST","DELETE","PATCH"}),
+        handlers.AllowedHeaders([]string{"*"}),
+    )(router)
 
     router.HandleFunc("/check", genericHandleFunc(s.HandleCheck))
     router.HandleFunc("/createAccount", genericHandleFunc(s.HandleCreateAccount))
