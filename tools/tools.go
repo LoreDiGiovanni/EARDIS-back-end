@@ -7,6 +7,7 @@ import(
     "crypto/rand"
     "encoding/hex"
     "os"
+    "time"
 )
 
 func WriteJSON(w http.ResponseWriter, status int, v any) error {
@@ -35,4 +36,23 @@ func RiGeneratePwd(pwd string,salt string) (string){
     hash := sha256.Sum256([]byte(pepper+pwd+salt))
     return hex.EncodeToString(hash[:])
 }
+func WriteHttpOnlyCookie(jwt string)(http.Cookie){
+    cookie := http.Cookie{
+		Name:     "eardis",
+		Value:    jwt,
+		HttpOnly: true,
+		Secure:   false, // true for HTTPS 
+		SameSite: http.SameSiteStrictMode,
+		Expires:  time.Now().Add(24 * time.Hour), 
+	}
+    return cookie
+}
 
+func ReadHttpOnlyCookie(r *http.Request)(string,error){
+    cookie, err := r.Cookie("eardis")
+    if err != nil{
+        return "",err
+    }else{
+        return cookie.Value, nil
+    }
+}

@@ -48,7 +48,6 @@ func (s* APIServer) Run() {
 func (s* APIServer) HandleCheck(w http.ResponseWriter, r *http.Request) error{
     switch r.Method {
         case "GET": return s.check(w,r) 
-        
     }
     return fmt.Errorf("Method not allowed %s", r.Method)
 }
@@ -283,6 +282,8 @@ func (s* APIServer) createAccount(w http.ResponseWriter,r *http.Request) error{
     newuser,err := s.store.CreateAccount(&user); if err!=nil{
         return tools.WriteJSON(w,http.StatusBadRequest,ApiError{Error: "Email or Username already used!"})
     }else{
+        cookie := tools.WriteHttpOnlyCookie(newuser.JWT) 
+        http.SetCookie(w, &cookie)
         return tools.WriteJSON(w,http.StatusOK,types.TokenResponse{Token: newuser.JWT})
     }
 }
@@ -302,8 +303,9 @@ func (s* APIServer) login(w http.ResponseWriter,r *http.Request) error{
     token,err := s.store.Login(&user);if err !=nil{
         return tools.WriteJSON(w,http.StatusBadRequest,ApiError{Error: "User formatting error"})
     }else{
-        token := struct{Token string `json:"token"`}{Token: token}
-        return tools.WriteJSON(w,http.StatusOK,token)
+        cookie := tools.WriteHttpOnlyCookie(token) 
+        http.SetCookie(w, &cookie)
+        return tools.WriteJSON(w,http.StatusOK,types.TokenResponse{Token: token})
     }
 }
 
