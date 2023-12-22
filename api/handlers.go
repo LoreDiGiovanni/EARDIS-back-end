@@ -39,9 +39,10 @@ func NewAPIServer(address string,store storage.Storage) *APIServer{
 
 func (s* APIServer) Run() {
     http.ListenAndServe(s.address, handlers.CORS(
-        handlers.AllowedOrigins([]string{"*"}),   // Consentire tutte le origini (da modificare in base alle tue esigenze di sicurezza)
+        handlers.AllowedOrigins([]string{"http://localhost:5173"}),   // Consentire tutte le origini (da modificare in base alle tue esigenze di sicurezza)
         handlers.AllowedMethods([]string{"GET", "POST", "DELETE", "PATCH"}),
         handlers.AllowedHeaders([]string{"Content-Type", "Authorization", "X-Requested-With"}), // Aggiungi altri header comuni secondo necessità
+        handlers.AllowCredentials(),
     )(s.SetupRoutes()))
 }
 

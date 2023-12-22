@@ -7,11 +7,12 @@ import (
 )
 
 func main(){
-    log.Println("[v] Back end started")
     store, err := storage.NewMongoStore()
     if err!=nil{
         log.Fatal("[X] Storeg connection error")
+    }else{
+        server := api.NewAPIServer(":3000",store)
+        log.Println("[v] Back end started")
+        server.Run()
     }
-    server := api.NewAPIServer(":3000",store)
-    server.Run()
 }

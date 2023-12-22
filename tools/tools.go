@@ -40,9 +40,11 @@ func WriteHttpOnlyCookie(jwt string)(http.Cookie){
     cookie := http.Cookie{
 		Name:     "eardis",
 		Value:    jwt,
+        Path:     "/",
 		HttpOnly: true,
 		Secure:   false, // true for HTTPS 
 		SameSite: http.SameSiteStrictMode,
+        Domain:   "localhost",
 		Expires:  time.Now().Add(24 * time.Hour), 
 	}
     return cookie
